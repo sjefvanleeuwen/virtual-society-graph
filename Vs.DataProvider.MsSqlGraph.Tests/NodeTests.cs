@@ -1,5 +1,6 @@
 using System.IO;
 using Vs.Graph.Core.Data;
+using Vs.Graph.Core.Data.AttributeTypes;
 using Xunit;
 using YamlDotNet.Serialization;
 
@@ -11,9 +12,9 @@ namespace Vs.DataProvider.MsSqlGraph.Tests
         public void Node_Create_Person()
         {
             NodeSchema n = new NodeSchema(name:"person");
-            n.Attributes.Add(new Attribute(name: "FirstName", type: AttributeType.Text));
-            n.Attributes.Add(new Attribute(name: "LastName", type: AttributeType.Text));
-            n.Attributes.Add(new Attribute(name: "DateOfBirth", type: AttributeType.DateTime));
+            n.Attributes.Add(new Attribute(name: "FirstName", type: new AttributeText()));
+            n.Attributes.Add(new Attribute(name: "LastName", type: new AttributeText()));
+            n.Attributes.Add(new Attribute(name: "DateOfBirth", new AttributeDatum()));
             n.Edges.Add(new EdgeSchema(name: "likes"));
             n.Edges.Add(new EdgeSchema(name: "married"));
             n.Edges.Add(new EdgeSchema(name: "friend"));
@@ -22,7 +23,7 @@ namespace Vs.DataProvider.MsSqlGraph.Tests
             n.Edges[1].Constraints.Add(new Constraint(name: "person"));
             n.Edges[2].Constraints.Add(new Constraint(name: "person"));
 
-            n.Edges[0].Attributes.Add(new Attribute(name: "rating", type: AttributeType.Integer));
+            n.Edges[0].Attributes.Add(new Attribute(name: "rating", type: new AttributeEuro()));
 
             //object p1 = from p in n select p;
             NodeSchemaScript script = new NodeSchemaScript();

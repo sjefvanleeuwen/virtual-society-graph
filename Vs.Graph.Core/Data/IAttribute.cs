@@ -2,7 +2,10 @@
 {
     public interface IAttribute
     {
-        AttributeType Type { get; }
-        string Name { get; }
+        IAttributeType Type { 
+            get; 
+            set;
+        }
+        string Name { get; set; }
     }
 }

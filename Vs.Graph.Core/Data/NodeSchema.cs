@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 
@@ -12,7 +13,11 @@ namespace Vs.Graph.Core.Data
 
         public string Name => _name;
 
-        public Attributes Attributes => _attributes;
+        public Attributes Attributes
+        {
+            get { return _attributes; }
+            set { _attributes = value; }
+        }
 
         public Edges Edges => _edges;
 
@@ -32,9 +37,16 @@ namespace Vs.Graph.Core.Data
 
         private class DeserializeTemplate
         {
-            public string Name;
-            public Attributes Attributes;
-            public Edges Edges;
+
+            public string Name { 
+                get;
+                set;
+            }
+            public Attributes Attributes { get; set; }
+            public Edges Edges { 
+                get; 
+                set;
+            }
         }
 
         public void Read(IParser parser, Type expectedType, ObjectDeserializer nestedObjectDeserializer)

@@ -1,4 +1,3 @@
-using System;
 using System.Data.SqlClient;
 using Vs.DataProvider.MsSqlGraph;
 using Vs.Graph.Core.Data;
@@ -10,34 +9,58 @@ namespace Vs.Graph.Core.Tests
     public class DataTests
     {
         [Fact]
-        public void Test1()
+        public void CreateEntityFromYamlWithCustomType()
         {
             // create some entities through built-in data provider
             var yaml = @"Version: 15.0.0.0
-Name: person
+Name: persoon
 Attributes:
-- Name: FirstName
-  Type: Text
-- Name: LastName
-  Type: Text
-- Name: DateOfBirth
-  Type: DateTime
+- Name: BSN
+  Type: elfproef
+- Name: periode
+  Type: periode
 Edges:
-- Name: recht
+- Name: partner
+  Constraints:
+  - Name: persoon
   Attributes:
-  - Name: periode_begin
-    Type: DateTime
-  - Name: periode_einde
-    Type: DateTime
-- Name: married
-- Name: friend
+  - Name: periode
+    Type: periode
+- Name: kind
+  Constraints:
+  - Name: persoon
+- Name: ouder
+  Constraints:
+  - Name: persoon
 ";
             var deserializer = new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
             var r = deserializer.Deserialize<NodeSchema>(yaml);
             NodeSchemaScript script = new NodeSchemaScript();
             var s = script.CreateScript(r);
+            Assert.True(s== @"CREATE TABLE persoon (
+ID INTEGER PRIMARY KEY,
+BSN VARCHAR(10),periode_begin DATETIME,periode_eind  DATETIME 
+) AS NODE;
+CREATE TABLE partner (
+periode_begin DATETIME,periode_eind  DATETIME CONSTRAINT EC_PARTNER CONNECTION (
+persoon TO persoon
+)
+) AS EDGE;
 
-           // s = @"CREATE TABLE Customer (ID INT PRIMARY KEY IDENTITY(1,1), CustName VARCHAR(100)) AS NODE";
+CREATE TABLE kind (
+CONSTRAINT EC_KIND CONNECTION (
+persoon TO persoon
+)
+) AS EDGE;
+
+CREATE TABLE ouder (
+CONSTRAINT EC_OUDER CONNECTION (
+persoon TO persoon
+)
+) AS EDGE;
+
+");
+            /*
 
             string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=graph;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
@@ -51,8 +74,6 @@ Edges:
                 {
                     while (reader.Read())
                     {
-                        Console.WriteLine(String.Format("{0}, {1}",
-                            reader["tPatCulIntPatIDPk"], reader["tPatSFirstname"]));// etc
                     }
                 }
                 finally
@@ -61,6 +82,7 @@ Edges:
                     reader.Close();
                 }
             }
+            */
         }
     }
 }

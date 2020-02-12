@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Vs.Graph.Core.Data;
 using Vs.Graph.Core.Data.Exceptions;
@@ -11,32 +12,40 @@ namespace Vs.DataProvider.MsSqlGraph
         {
             if (@object == null) return string.Empty;
             var sb = new StringBuilder();
+
+            var typesWithMyAttribute =
+                from a in AppDomain.CurrentDomain.GetAssemblies()
+                from t in a.GetTypes()
+                let attributes = t.GetCustomAttributes(typeof(AttributeTypeAttribute), true)
+                where attributes != null && attributes.Length > 0
+                select new { Type = t, Attributes = attributes.Cast<AttributeTypeAttribute>() };
+
             foreach (var attribute in @object)
             {
-                var msSqlField = "";
-                switch (attribute.Type)
+                // Resolve AttributeType from types that inherit from IAttributeType
+                switch (((AttributeTypeAttribute)attribute.Type.GetType().GetCustomAttributes(typeof(AttributeTypeAttribute), true)[0]).Name)
                 {
-                    case AttributeType.Currency:
-                        msSqlField = "MONEY";
+                    case "datum":
+                        sb.Append($"{attribute.Name} DATETIME,");
                         break;
-                    case AttributeType.DateTime:
-                        msSqlField = "DATETIME";
+                    case "elfproef":
+                        sb.Append($"{attribute.Name} VARCHAR(10),");
                         break;
-                    case AttributeType.Decimal:
-                        msSqlField = "DECIMAL";
+                    case "euro":
+                        sb.Append($"{attribute.Name} DECIMAL,");
                         break;
-                    case AttributeType.Integer:
-                        msSqlField = "INTEGER";
+                    case "periode":
+                        sb.Append($"{attribute.Name}_begin DATETIME,");
+                        sb.Append($"{attribute.Name}_eind  DATETIME,");
                         break;
-                    case AttributeType.Text:
-                        msSqlField = "NTEXT";
+                    case "Text":
+                        sb.Append($"{attribute.Name}  NTEXT,");
                         break;
                     default:
                         throw new AttributeNotSupportedException();
                 }
-                sb.AppendLine($"{attribute.Name} {msSqlField}, ");
             }
-            return sb.ToString();
+            return sb.ToString().TrimEnd(',') + ' ';
         }
     }
 }
